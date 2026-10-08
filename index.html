@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>住宅関連費かんたん判定</title>
+<style>
+*{box-sizing:border-box;font-size:15px}body{margin:0;font-family:Meiryo,sans-serif;color:#173e2a;background:#edf5ef}header,footer{padding:12px 20px;background:#fff}h1{font-size:25px;margin:0}h2{font-size:22px}main{display:grid;grid-template-columns:1.15fr 1fr;gap:12px;padding:12px}section{background:#fff;border:1px solid #a7cbb5;border-radius:12px;padding:14px}fieldset{border:1px solid #bed6c7;border-radius:8px;padding:10px;margin:0 0 10px}legend{font-weight:bold}label{display:inline-flex;align-items:center;gap:5px;margin:4px 7px 4px 0}input[type=radio]{accent-color:#217346;width:18px;height:18px}input[type=number],select{padding:8px;border:1px solid #90b69f;border-radius:6px;max-width:100%;margin:4px}button{background:#217346;color:#fff;border:0;padding:12px 30px;border-radius:8px;font-weight:bold;cursor:pointer}.note{background:#edf7f0;padding:7px;line-height:1.5}.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}.card{border:1px solid #a7cbb5;padding:12px;border-radius:8px}.money{font-size:26px;font-weight:bold}.error{background:#fff0eb;padding:12px;color:#92351f}.delta{background:#edf7f0;padding:12px;font-weight:bold;margin-top:10px}footer{line-height:1.6;border-top:2px solid #a7cbb5}footer strong{font-size:16px}.warn{background:#fff5d4;padding:8px}a{color:#217346}
+#consent{position:fixed;inset:0;z-index:9999;background:#edf5ef;display:grid;place-items:center;padding:20px}#consent.closed{display:none}.consentBox{width:min(650px,100%);background:#fff;border:1px solid #a7cbb5;border-radius:14px;padding:24px;box-shadow:0 12px 35px #173e2a2b}.consentBox h2{margin:0 0 10px;color:#17643a}.item{padding:11px;margin:9px 0;border-radius:8px;background:#edf7f0;line-height:1.6}.caution{background:#fff5d4}.consentCheck{display:flex;align-items:flex-start;gap:8px;padding:10px;margin:13px 0;font-weight:bold}.consentCheck input{width:20px;height:20px;flex:none}.consentBox button{width:100%}.consentBox button:disabled{background:#91aa9a;cursor:not-allowed}@media(max-width:950px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="consent"><div class="consentBox">
+<h2>ご利用前にご確認ください</h2>
+<p>住宅手当・社宅料・寮費の現在と改定後を試算できます。</p>
+<div class="item caution">結果は参考値です。実際の金額と異なる場合があります。正式な内容は最新の規程・担当窓口でご確認ください。</div>
+<div class="item">入力した判定情報は保存・送信されません。利用状況の確認のため、「判定する」ボタンの実行回数のみGA4へ送信します。通信できない場合も判定できます。</div>
+<label class="consentCheck"><input id="agree" type="checkbox">上記を確認し、同意します。</label>
+<button id="enter" disabled>同意して判定画面へ進む</button>
+</div></div>
+<header><h1>住宅関連費かんたん判定</h1>現在と改定後の比較（資料記載の改定案に基づく参考試算）</header>
+<main><section>
+<fieldset><legend>1. 居住区分</legend><div id="housing"></div></fieldset>
+<div id="normal" hidden>
+<fieldset><legend>2. 世帯区分</legend><div id="type"></div><div class="note">※準世帯主：扶養なしで、世帯主として独立した生計をもつ方<br>※非世帯主：自治体届出上の世帯主である配偶者と同居している方</div></fieldset>
+<fieldset><legend>3. 年齢区分</legend><div id="age"></div></fieldset>
+<fieldset><legend>4. 居住地域</legend><select id="loc"><option value="">選択してください</option></select><div class="note">改定後：<b>A</b>＝東京都・神奈川県・千葉県・埼玉県、大阪市・京都市・神戸市・西宮市<br><b>B</b>＝仙台市・名古屋市・静岡市・奈良市・堺市・広島市・福岡市・長崎市<br><b>C</b>＝その他。現在と改定後の地区は別々に判定します。</div></fieldset>
+<fieldset id="subsidy" hidden><legend>5. 現在の高額家賃補助</legend><div id="hr"></div><div id="amount" hidden><label>実際の受給額（月額）<input id="hrvalue" type="number" min="0" placeholder="円"></label></div><div class="note">給与明細等の実際の受給額を入力してください。非世帯主は受給なしとして扱います。</div></fieldset>
+</div>
+<div id="companyFields" hidden>
+<fieldset><legend>2. 社宅条件</legend><div id="ct"></div><div id="own"></div></fieldset>
+<fieldset><legend>3. 地区・人数</legend><select id="cd"><option value="">地区を選択</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select><select id="occ"><option value="">人数を選択</option><option value="0">独身者／単身</option><option value="1">本人＋家族1～2人</option><option value="2">本人＋家族3人</option><option value="3">本人＋家族4人</option><option value="4">本人＋家族5人以上</option></select><div class="note"><b>社宅地区（重点地域）</b><br><b>B地区</b>：埼玉県の指定市町（和光市・戸田市・蕨市・草加市・八潮市・川口市・三郷市・朝霞市・新座市・さいたま市・富士見市・越谷市・志木市・所沢市・三芳町・吉川市）<br><b>D地区</b>：埼玉県のB地区以外、栃木県宇都宮市、熊本県の指定市町（熊本市・菊陽町・大津町・合志市）<br><b>E地区</b>：栃木県・熊本県のD地区以外<br>※その他の地域区分は一部省略。住宅手当のA～Cとは別区分です。</div></fieldset>
+<fieldset><legend>4. 月額情報（諸経費を除く）</legend><label>契約家賃<input id="rentval" type="number" min="0" placeholder="円"></label><label>現在の社宅料<input id="nowcompany" type="number" min="0" placeholder="円"></label><div class="note">現在の社宅料は契約家賃だけでは算出できません。未入力の場合、Beforeのみ判定不可とします。改定後は社宅ランク・坪数に関係しない家賃連動型です。</div></fieldset>
+</div>
+<div id="dormFields" hidden><fieldset><legend>2. 独身寮</legend><select id="dormname"><option value="">寮を選択してください</option></select></fieldset><fieldset><legend>3. 現在の寮費</legend><input id="nowdorm" type="number" min="0" placeholder="円"></fieldset></div>
+<button id="judge">判定する</button>　選択を変更して再判定できます。
+</section><section id="result" aria-live="polite"><h2>判定結果</h2>入力後に「判定する」を押してください。</section></main>
+<footer><strong>入力した判定情報は保存・送信されません。</strong><br>元データ：<a id="pdfLink" href="#">住宅関連制度改定資料（PDF）</a><div class="warn">正式な適用可否は最新の規程・会社届出情報・担当窓口でご確認ください。Afterは移行措置を含まない新水準です。</div></footer>
+<script>
+/* GA4測定ID */
+const GA4_ID='G-PNNTHTRBVE';
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments)}
+function loadGA4(){
+  if(!navigator.onLine || GA4_ID==='G-XXXXXXXXXX') return;
+  const s=document.createElement('script');
+  s.async=true;
+  s.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA4_ID);
+  document.head.appendChild(s);
+  gtag('js',new Date());
+  gtag('config',GA4_ID,{send_page_view:false});
+}
+function countJudge(){
+  try{
+    if(navigator.onLine && GA4_ID!=='G-XXXXXXXXXX'){
+      gtag('event','judge_click',{transport_type:'beacon',app_name:'housing_cost_estimator'});
+    }
+  }catch(e){}
+}
+loadGA4();
+const $=id=>document.getElementById(id),c=n=>document.querySelector('input[name="'+n+'"]:checked')?.value,y=v=>new Intl.NumberFormat('ja-JP').format(Math.round(v))+'円';
+$('agree').onchange=()=>$('enter').disabled=!$('agree').checked;
+$('enter').onclick=()=>{if($('agree').checked)$('consent').classList.add('closed')};
+function radios(id,items){items.forEach(([v,t])=>{const l=document.createElement('label'),i=document.createElement('input');i.type='radio';i.name=id;i.value=v;l.append(i,document.createTextNode(t));$(id).append(l)})}
+radios('housing',[['rent','賃貸'],['owned','持ち家'],['company','社宅'],['dorm','独身寮']]);
+radios('type',[['0','世帯主・扶養あり'],['1','準世帯主・扶養なし'],['2','非世帯主']]);
+radios('age',[['0','30歳以上'],['1','30歳未満']]);
+radios('hr',[['yes','受給している'],['no','受給していない'],['unknown','分からない']]);
+radios('ct',[['single','単身赴任'],['family','本人・家族入居（独身者含む）']]);
+radios('own',[['yes','持ち家あり'],['no','持ち家なし']]);
+const A=['東京都','神奈川県','千葉県','埼玉県'],oldB=['大阪市','名古屋市','京都市','神戸市','北九州市','札幌市','福岡市','広島市','仙台市','静岡市','堺市','新潟市','岡山市'],newA=[...A,'大阪市','京都市','神戸市','西宮市'],newB=['仙台市','名古屋市','静岡市','奈良市','堺市','広島市','福岡市','長崎市'];
+[...new Set([...newA,...newB,...oldB]),'その他'].forEach(t=>$('loc').add(new Option(t,t)));
+const cur={A:[17000,8500,0],B:[15000,7500,0],C:[11600,5800,0]},rev={A:[[20000,32000],[10000,22000],[10000,22000]],B:[[16000,25600],[8000,17600],[8000,17600]],C:[[13000,20800],[6500,14300],[6500,14300]]},lim={A:[116000,168000,212000,257000,283000],B:[89000,129000,163000,197000,217000],C:[77000,107000,128000,155000,160000],D:[65000,87000,116000,136000,148000],E:[55000,68000,80000,90000,98000]},rates={A:.2,B:.2,C:.25,D:.3,E:.35};
+const dorms=[['モトーレ和光',24900,32000],['パルテンツア朝霞A',21600,27700],['パルテンツア朝霞B',24600,31100],['フォレット宝石台',24900,18700],['FIND寮',26800,24600],['ラポール鈴鹿',23800,21500],['グリーンガーデン寄居',14200,17400],['ヴェルデ小川',14200,19100],['ブルームさくら',13800,16300],['ジュネポワール',13900,16500],['高志寮',13900,16400],['ルレーブ高尾野寮A',13700,16800],['ルレーブ高尾野寮B',14500,17800]];
+dorms.forEach((d,i)=>$('dormname').add(new Option(d[0],i)));
+$('dormname').onchange=()=>{$('nowdorm').value=$('dormname').value===''?'':dorms[+$('dormname').value][1]};
+function update(){const h=c('housing');$('normal').hidden=!['rent','owned'].includes(h);$('companyFields').hidden=h!=='company';$('dormFields').hidden=h!=='dorm';$('subsidy').hidden=!(h==='rent'&&['0','1'].includes(c('type')));$('amount').hidden=c('hr')!=='yes'}
+document.querySelectorAll('input[type=radio]').forEach(i=>i.addEventListener('change',update));
+function missing(m){$('result').innerHTML='<h2>入力不足のため判定不可</h2><div class="error">不足項目：<ul>'+m.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>'}
+function compare(title,before,after,reason){const b=before==null?'<div class="error"><b>入力不足のため判定不可</b></div>':'<p class="money">'+y(before)+'／月</p>年間換算 '+y(before*12),d=before==null?'':'<div class="delta">月額差 '+(after-before>=0?'+':'')+y(after-before)+'<br>年間差 '+((after-before)*12>=0?'+':'')+y((after-before)*12)+'</div>';$('result').innerHTML='<h2>'+title+'</h2><div class="cards"><div class="card"><b>Before 現在</b>'+b+'</div><div class="card"><b>After 新水準</b><p class="money">'+y(after)+'／月</p>年間換算 '+y(after*12)+'</div></div>'+d+'<p>'+reason+'</p>'}
+function num(id,label,m,required=true){const s=$(id).value,v=Number(s);if(s===''||!Number.isFinite(v)||v<0){if(required)m.push(label);return null}return v}
+$('judge').onclick=()=>{countJudge();const h=c('housing'),m=[];if(!h)return missing(['居住区分']);if(['rent','owned'].includes(h)){const t=c('type'),age=c('age'),l=$('loc').value;if(t===undefined)m.push('世帯区分');if(age===undefined)m.push('年齢区分');if(!l)m.push('居住地域');if(m.length)return missing(m);const od=A.includes(l)?'A':oldB.includes(l)?'B':'C',nd=newA.includes(l)?'A':newB.includes(l)?'B':'C',base=cur[od][t],after=rev[nd][t][age];let sub=0,before=base,hr=c('hr');if(h==='rent'&&['0','1'].includes(t)){if(!hr||hr==='unknown')before=null;else if(hr==='yes'){const v=num('hrvalue','',[],false);before=v==null?null:base+v;sub=v||0}}compare('住宅関連手当の比較',before,after,'地区 '+od+' → '+nd+'。現在の高額家賃補助：'+(before==null?'判定不可':y(sub)));return}if(h==='company'){const ct=c('ct'),own=c('own'),d=$('cd').value,o=$('occ').value;if(!ct)m.push('社宅区分');if(ct!=='single'&&!own)m.push('持ち家の有無');if(!d)m.push('社宅地区');if(o==='')m.push('入居人数');const rent=num('rentval','契約家賃',m);if(m.length)return missing(m);if(ct==='single'&&o!=='0')return missing(['人数を「独身者／単身」に修正']);const now=num('nowcompany','',[],false),limit=lim[d][o],base=Math.min(rent,limit),over=Math.max(0,rent-limit),rate=ct==='single'?0:rates[d]-(own==='yes'?.1:0),after=Math.round(base*rate+over),formula=ct==='single'?'超過分 '+y(over)+' ＝ '+y(after):'min（'+y(rent)+'、'+y(limit)+'）×'+Math.round(rate*100)+'％＋超過分 '+y(over)+' ＝ '+y(after);compare('社宅料の比較（諸経費除く）',now,after,'<b>算出式：'+formula+'</b><br>管理費・共益費などは別途加算されます。');return}const i=$('dormname').value;if(i==='')m.push('独身寮');const now=num('nowdorm','現在の寮費',m);if(m.length)return missing(m);compare('寮費の比較',now,dorms[+i][2],dorms[+i][0]+'の資料掲載額で比較。')};
+</script>
+</body>
+</html>
